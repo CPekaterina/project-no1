@@ -22,6 +22,7 @@ $RECYCLE.BIN/
 *.tex~
 *.bbl
 *.blg
+*.toc
 *.out
 *.log
 *.synctex
