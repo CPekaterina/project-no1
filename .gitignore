@@ -15,11 +15,17 @@ $RECYCLE.BIN/
 *.msp
 
 #LATEX
- *.aux
-    *.ps
-    *.log
-    *.dvi
-    *.tex~
+*.aux
+*.ps
+*.log
+*.dvi
+*.tex~
+*.bbl
+*.blg
+*.toc
+*.out
+*.log
+*.synctex
 
 # =========================
 # Operating System Files
