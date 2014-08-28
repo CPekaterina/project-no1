@@ -1,10 +1,11 @@
 #include <iostream>
 #include<cmath>
+#include <lib.h>
 
 using namespace std;
 
 double* tridiagonal (double*a,double*b,double*c,double*w, int n);   //general tridiagonal matrix solver
-double* tridiagonaldiff (double* w, int n);                         //sprecific trdiagonal matrix solver for Poisson equation
+double* tridiagonaldiff (double *ah,double* w, int n);              //sprecific trdiagonal matrix solver for Poisson equation
 double* f(double x);                                                //source function
 double* diffreference(double x);                                    //reference solution for source function
 
@@ -29,15 +30,63 @@ int main()
         w[i-1]=*f(double(i)*h)*h*h;     // b[i]=f[i]*h, see project description
     }
 
+
+
+
+    //solution with tridiagonal
+
+    double* a,*b,*c;
+    a = new double[n];
+    b = new double[n];
+    c = new double[n];
+    c[0]=double(0);
+    c[n-1]=double(-1);
+    b[0]=double(-1);
+    b[n-1]=double(0);
+    a[0]=a[n-1]=double(2);
+    for (int i=1;i<n-1;i++)
+    {
+        a[i] = double(2);
+        b[i] = double(-1);
+        c[i] = double(-1);
+    }
+
+    double* results2 = tridiagonal(a,b,c,w,n);
+
+
+
+
+
+    //solution with tridiagonaldiff
+
+    //w has to be reset because of call by reference if w in tridiagonal
+    w = new double[n];
+    for (int i=1;i<=n;i++)
+    {
+        w[i-1]=*f(double(i)*h)*h*h;     // b[i]=f[i]*h, see project description
+    }
+
+
+    //shortcut to save 1*(n-1) flops
+
+    double* ah;
+    ah = new double[n];
+    ah[0]=2;
+    for (int i=1;i<n;i++)
+    {
+        ah[i] = double(2)-double(1)/ah[i-1];
+    }
+
+
     //compute the results
 
-    double *results=tridiagonaldiff(w,n);
+    double *results=tridiagonaldiff(ah,w,n);
 
     //comparation with reference solution
 
     for(int i=0;i<n;i++)
     {
-        cout << results[i] << " " << *diffreference(double(1+i)*h) << endl;
+        cout << results2[i] << " " << results[i] << " " << *diffreference(double(1+i)*h) << endl;
     }
 
     return 0;
@@ -47,51 +96,40 @@ int main()
 
 double* tridiagonal (double*a,double*b,double*c,double*w, int n)
 {
-    double* x, *ah, *wh;
+    double* x;
     x = new double[n];
-    ah = new double[n];
-    wh = new double[n];
-
-    ah[0] =a[0];
-    wh[0] =w[0];
 
     for (int i=1;i<n;i++)
     {
         double temp = c[i]/a[i-1];
-        ah[i] = a[i]-b[i-1]*temp;
-        wh[i] = w[i]-wh[i-1]*temp;
+        a[i] = a[i]-b[i-1]*temp;
+        w[i] = w[i]-w[i-1]*temp;
     }
 
-    x[n-1] = wh[n-1]/ah[n-1];
+    x[n-1] = w[n-1]/a[n-1];
+
     for (int i=n-2;i>=0;i--)
     {
-        x[i] = (wh[i]-b[i+1]*x[i+1])/ah[i];
+        x[i] = (w[i]-b[i]*x[i+1])/a[i];
     }
     return x;
 }
 
-
-double* tridiagonaldiff (double* w, int n)
+double* tridiagonaldiff (double* a, double* w, int n)
 {
-    double* x, *ah, *wh;
+    double* x;
     x = new double[n];
-    ah = new double[n];
-    wh = new double[n];
-
-    ah[0] = 2;
-    wh[0] = w[0];
 
     for (int i=1;i<n;i++)
     {
-        ah[i] = double(2)-double(1)/ah[i-1];
-        wh[i] = w[i]+wh[i-1]/ah[i-1];
+        w[i] = w[i]+w[i-1]/a[i-1];
     }
 
-    x[n-1] = wh[n-1]/ah[n-1];
+    x[n-1] = w[n-1]/a[n-1];
 
     for (int i=n-2;i>=0;i--)
     {
-        x[i] = (wh[i]+x[i+1])/ah[i];
+        x[i] = (w[i]+x[i+1])/a[i];
     }
     return x;
 
