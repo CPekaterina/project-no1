@@ -1,6 +1,9 @@
 #include <iostream>
-#include<cmath>
+#include <iomanip>
+#include <cmath>
 #include <lib.h>
+#include <fstream>
+
 
 using namespace std;
 
@@ -8,6 +11,8 @@ double* tridiagonal (double*a,double*b,double*c,double*w, int n);   //general tr
 double* tridiagonaldiff (double *ah,double* w, int n);              //sprecific trdiagonal matrix solver for Poisson equation
 double* f(double x);                                                //source function
 double* diffreference(double x);                                    //reference solution for source function
+void write(double *z, double *y, int n, char *file);
+
 
 int main()
 {
@@ -17,9 +22,15 @@ int main()
     cout << "What is the number of grid points? n= ";
     cin >> n;
 
-    //step length
+    //step length and steparray
 
     double h =double(1)/double(n+1);
+    double* steparray;
+    steparray = new double[n];
+    for (int i=0;i<n;i++)
+    {
+        steparray[i]=(i+1)*h;
+    }
 
     //create the right side of the equation
 
@@ -54,9 +65,6 @@ int main()
     double* results2 = tridiagonal(a,b,c,w,n);
 
 
-
-
-
     //solution with tridiagonaldiff
 
     //w has to be reset because of call by reference if w in tridiagonal
@@ -67,7 +75,7 @@ int main()
     }
 
 
-    //shortcut to save 1*(n-1) flops
+    //shortcut to save 2*(n-1) flops
 
     double* ah;
     ah = new double[n];
@@ -82,12 +90,27 @@ int main()
 
     double *results=tridiagonaldiff(ah,w,n);
 
-    //comparation with reference solution
+    //compute the reference solution
 
+    double *ref;
+    ref = new double[n];
     for(int i=0;i<n;i++)
     {
-        cout << results2[i] << " " << results[i] << " " << *diffreference(double(1+i)*h) << endl;
+        ref[i]=*diffreference(double(1+i)*h);
+
     }
+
+    //write reference solution in a .dat file and also the results
+
+    char filename[30]={0};
+    char reffile[30]={0};
+    cout << "Name the results file: ";
+    cin >> filename;
+    cout << "Name the reference file: ";
+    cin >> reffile;
+
+    write(steparray,ref,n,reffile);
+    write(steparray,results,n,filename);
 
     return 0;
 }
@@ -102,8 +125,8 @@ double* tridiagonal (double*a,double*b,double*c,double*w, int n)
     for (int i=1;i<n;i++)
     {
         double temp = c[i]/a[i-1];
-        a[i] = a[i]-b[i-1]*temp;
-        w[i] = w[i]-w[i-1]*temp;
+        a[i] -= b[i-1]*temp;
+        w[i] -= w[i-1]*temp;
     }
 
     x[n-1] = w[n-1]/a[n-1];
@@ -122,7 +145,7 @@ double* tridiagonaldiff (double* a, double* w, int n)
 
     for (int i=1;i<n;i++)
     {
-        w[i] = w[i]+w[i-1]/a[i-1];
+        w[i] += w[i-1]/a[i-1];
     }
 
     x[n-1] = w[n-1]/a[n-1];
@@ -145,4 +168,17 @@ double* diffreference(double x)
 {
     double res = double(1)-(double(1)-exp(-double(10)))*x-exp(double(-10)*x);
     return &res;
+}
+
+//function to write results in .dat files
+
+void write(double *z, double *y, int n, char *file)
+{
+    ofstream resout;
+    resout.open(file);
+    for (int i=0; i<n; i++)
+    {
+        resout << setprecision(15) << setw(19) << z[i] << " " << setprecision(15) << setw(19) << y[i] << endl;
+    }
+    resout.close();
 }
