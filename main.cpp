@@ -5,21 +5,25 @@
 using namespace std;
 
 double* tridiagonal (double*a,double*b,double*c,double*w, int n);   //general tridiagonal matrix solver
-double* tridiagonaldiff (double *ah,double* w, int n);              //sprecific trdiagonal matrix solver for Poisson equation
+double* tridiagonaldiff (double *ah,double* w, int n);              //specific tridiagonal matrix solver for Poisson equation
 double* f(double x);                                                //source function
 double* diffreference(double x);                                    //reference solution for source function
+double findmax(double* ei, int n);                                  //finds the max value in an array
 
 int main()
 {
+
     //get the number of gridpoints
 
     int n;
     cout << "What is the number of grid points? n= ";
     cin >> n;
 
+
     //step length
 
     double h =double(1)/double(n+1);
+
 
     //create the right side of the equation
 
@@ -27,11 +31,8 @@ int main()
     w = new double[n];
     for (int i=1;i<=n;i++)
     {
-        w[i-1]=*f(double(i)*h)*h*h;     // b[i]=f[i]*h, see project description
+        w[i-1]=*f(double(i)*h)*h*h;     // b[i]=f[i]*h*h, see project description
     }
-
-
-
 
     //solution with tridiagonal
 
@@ -54,16 +55,13 @@ int main()
     double* results2 = tridiagonal(a,b,c,w,n);
 
 
-
-
-
     //solution with tridiagonaldiff
 
     //w has to be reset because of call by reference if w in tridiagonal
     w = new double[n];
     for (int i=1;i<=n;i++)
     {
-        w[i-1]=*f(double(i)*h)*h*h;     // b[i]=f[i]*h, see project description
+        w[i-1]=*f(double(i)*h)*h*h;     // b[i]=f[i]*h*h, see project description
     }
 
 
@@ -82,12 +80,31 @@ int main()
 
     double *results=tridiagonaldiff(ah,w,n);
 
+
     //comparation with reference solution
 
     for(int i=0;i<n;i++)
     {
         cout << results2[i] << " " << results[i] << " " << *diffreference(double(1+i)*h) << endl;
     }
+
+
+    //calculate the max value of the relative error
+
+    double* ei;
+    ei = new double[n];
+
+    for(int i=0;i<n;i++)
+    {
+      double ref = *diffreference(double(1+i)*h);
+      ei[i] = log10(fabs((results[i]- ref)/ref));
+    }
+
+    double maxvalue = findmax(ei, n);
+    double logh = log10(h);
+
+    cout.precision(10);
+    cout << logh << " " << maxvalue << " " << n << endl;
 
     return 0;
 }
@@ -145,4 +162,19 @@ double* diffreference(double x)
 {
     double res = double(1)-(double(1)-exp(-double(10)))*x-exp(double(-10)*x);
     return &res;
+}
+
+
+double findmax(double* ei, int n)
+{
+    double max = ei[0];
+
+    for(int i=1;i<n; i++)
+    {
+        if(ei[i]>max)
+        {
+            max = ei[i];
+        }
+    }
+    return max;
 }
