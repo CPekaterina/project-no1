@@ -1,6 +1,9 @@
 #include <iostream>
-#include<cmath>
+#include <iomanip>
+#include <cmath>
 #include <lib.h>
+#include <fstream>
+
 
 using namespace std;
 
@@ -8,7 +11,12 @@ double* tridiagonal (double*a,double*b,double*c,double*w, int n);   //general tr
 double* tridiagonaldiff (double *ah,double* w, int n);              //specific tridiagonal matrix solver for Poisson equation
 double* f(double x);                                                //source function
 double* diffreference(double x);                                    //reference solution for source function
+<<<<<<< HEAD
 double findmax(double* ei, int n);                                  //finds the max value in an array
+=======
+void write(double *z, double *y, int n, char *file);
+
+>>>>>>> a7cc8d6c107174a87bd18168845af3f4853023cb
 
 int main()
 {
@@ -19,10 +27,20 @@ int main()
     cout << "What is the number of grid points? n= ";
     cin >> n;
 
+<<<<<<< HEAD
 
     //step length
+=======
+    //step length and steparray
+>>>>>>> a7cc8d6c107174a87bd18168845af3f4853023cb
 
     double h =double(1)/double(n+1);
+    double* steparray;
+    steparray = new double[n];
+    for (int i=0;i<n;i++)
+    {
+        steparray[i]=(i+1)*h;
+    }
 
 
     //create the right side of the equation
@@ -65,7 +83,7 @@ int main()
     }
 
 
-    //shortcut to save 1*(n-1) flops
+    //shortcut to save 2*(n-1) flops
 
     double* ah;
     ah = new double[n];
@@ -80,14 +98,22 @@ int main()
 
     double *results=tridiagonaldiff(ah,w,n);
 
+<<<<<<< HEAD
 
     //comparation with reference solution
+=======
+    //compute the reference solution
+>>>>>>> a7cc8d6c107174a87bd18168845af3f4853023cb
 
+    double *ref;
+    ref = new double[n];
     for(int i=0;i<n;i++)
     {
-        cout << results2[i] << " " << results[i] << " " << *diffreference(double(1+i)*h) << endl;
+        ref[i]=*diffreference(double(1+i)*h);
+
     }
 
+<<<<<<< HEAD
 
     //calculate the max value of the relative error
 
@@ -105,6 +131,19 @@ int main()
 
     cout.precision(10);
     cout << logh << " " << maxvalue << " " << n << endl;
+=======
+    //write reference solution in a .dat file and also the results
+
+    char filename[30]={0};
+    char reffile[30]={0};
+    cout << "Name the results file: ";
+    cin >> filename;
+    cout << "Name the reference file: ";
+    cin >> reffile;
+
+    write(steparray,ref,n,reffile);
+    write(steparray,results,n,filename);
+>>>>>>> a7cc8d6c107174a87bd18168845af3f4853023cb
 
     return 0;
 }
@@ -119,8 +158,8 @@ double* tridiagonal (double*a,double*b,double*c,double*w, int n)
     for (int i=1;i<n;i++)
     {
         double temp = c[i]/a[i-1];
-        a[i] = a[i]-b[i-1]*temp;
-        w[i] = w[i]-w[i-1]*temp;
+        a[i] -= b[i-1]*temp;
+        w[i] -= w[i-1]*temp;
     }
 
     x[n-1] = w[n-1]/a[n-1];
@@ -139,7 +178,7 @@ double* tridiagonaldiff (double* a, double* w, int n)
 
     for (int i=1;i<n;i++)
     {
-        w[i] = w[i]+w[i-1]/a[i-1];
+        w[i] += w[i-1]/a[i-1];
     }
 
     x[n-1] = w[n-1]/a[n-1];
@@ -164,6 +203,7 @@ double* diffreference(double x)
     return &res;
 }
 
+<<<<<<< HEAD
 
 double findmax(double* ei, int n)
 {
@@ -177,4 +217,17 @@ double findmax(double* ei, int n)
         }
     }
     return max;
+=======
+//function to write results in .dat files
+
+void write(double *z, double *y, int n, char *file)
+{
+    ofstream resout;
+    resout.open(file);
+    for (int i=0; i<n; i++)
+    {
+        resout << setprecision(15) << setw(19) << z[i] << " " << setprecision(15) << setw(19) << y[i] << endl;
+    }
+    resout.close();
+>>>>>>> a7cc8d6c107174a87bd18168845af3f4853023cb
 }
