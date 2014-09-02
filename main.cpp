@@ -9,11 +9,16 @@
 using namespace std;
 
 double* tridiagonal (double*a,double*b,double*c,double*w, int n);   //general tridiagonal matrix solver
-double* tridiagonaldiff (double *ah,double* w, int n);              //sprecific trdiagonal matrix solver for Poisson equation
+double* tridiagonaldiff (double *ah,double* w, int n);              //specific tridiagonal matrix solver for Poisson equation
 double* f(double x);                                                //source function
 double* diffreference(double x);                                    //reference solution for source function
+<<<<<<< HEAD
 void write(double *z, double *y, int n, char *file);                //writes a (z,y) double vector of size n into a file
 void printmatrix(double ** A, int n, int m);                        //prints a n x m matrix A
+=======
+double findmax(double* ei, int n);                                  //finds the max value in an array
+void write(double *z, double *y, int n, char *file);
+>>>>>>> a5a7adab3f7c2058fc1f19bd4a6c9b58d65c17aa
 
 
 int main()
@@ -40,7 +45,7 @@ int main()
     w = new double[n];
     for (int i=1;i<=n;i++)
     {
-        w[i-1]=*f(double(i)*h)*h*h;     // b[i]=f[i]*h, see project description
+        w[i-1]=*f(double(i)*h)*h*h; // b[i]=f[i]*h*h, see project description
     }
 
 
@@ -73,7 +78,7 @@ int main()
     w = new double[n];
     for (int i=1;i<=n;i++)
     {
-        w[i-1]=*f(double(i)*h)*h*h;     // b[i]=f[i]*h, see project description
+        w[i-1]=*f(double(i)*h)*h*h; // b[i]=f[i]*h*h, see project description
     }
 
 
@@ -99,7 +104,6 @@ int main()
     for(int i=0;i<n;i++)
     {
         ref[i]=*diffreference(double(1+i)*h);
-
     }
 
     //write reference solution in a .dat file and also the results
@@ -114,6 +118,7 @@ int main()
     write(steparray,ref,n,reffile);
     write(steparray,results,n,filename);
 
+<<<<<<< HEAD
     //part D: LU-decomposition
 
     //write the set of equations as a matrix
@@ -138,6 +143,24 @@ int main()
     indx = new int[n];
     double *d;
     ludcmp(A,n,indx,d);
+=======
+    //calculate the max value of the relative error
+
+    double* ei;
+    ei = new double[n];
+
+    for(int i=0;i<n;i++)
+    {
+      double ref = *diffreference(double(1+i)*h);
+      ei[i] = log10(fabs((results[i]- ref)/ref));
+    }
+
+    double maxvalue = findmax(ei, n);
+    double logh = log10(h);
+
+    cout.precision(10);
+    cout << logh << " " << maxvalue << " " << n << endl;
+>>>>>>> a5a7adab3f7c2058fc1f19bd4a6c9b58d65c17aa
 
     return 0;
 }
@@ -183,6 +206,7 @@ double* tridiagonaldiff (double* a, double* w, int n)
     }
     return x;
 
+
 }
 
 
@@ -195,6 +219,20 @@ double* diffreference(double x)
 {
     double res = double(1)-(double(1)-exp(-double(10)))*x-exp(double(-10)*x);
     return &res;
+}
+
+double findmax(double* ei, int n)
+{
+    double max = ei[0];
+
+    for(int i=1;i<n; i++)
+    {
+        if(ei[i]>max)
+        {
+            max = ei[i];
+        }
+    }
+    return max;
 }
 
 //function to write results in .dat files
