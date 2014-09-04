@@ -4,10 +4,12 @@
 \usepackage{graphicx}
 \usepackage{a4wide}
 \usepackage{color}
+\usepackage[options]{SIunits}
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage[dvips]{epsfig}
-\usepackage[ansinew]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[OT1]{fontenc}
 \usepackage{cite} % [2,3,4] --> [2--4]
 \usepackage{shadow}
 \usepackage{hyperref}
@@ -45,10 +47,10 @@ If we now multiply these equations with $h^2$ and consider the boundary conditio
 \begin{equation}
  \begin{matrix}
 2v_1 & - v_2 &          &               &          &=h^2f_1 \\
- -v_1 & 2v_2 & -v_3  &               &          &=h^2f_2 \\
-         &  -v_2 & 2v_3 & -v_4       &          & =h^2f_3\\
+ -v_1 & +2v_2 & -v_3  &               &          &=h^2f_2 \\
+         &  -v_2 & +2v_3 & -v_4       &          & =h^2f_3\\
 ...\\ 
-         &           &          & -v_{n-1}& 2v_n & =h^2f_n\\
+         &           &          & -v_{n-1}& +2v_n & =h^2f_n\\
  \end{matrix}
 \label{eq:2.2}
 \end{equation}
@@ -202,23 +204,84 @@ double* tridiagonaldiff (double* a, double* w, int n)
 \end{lstlisting}
 \begin{figure}[b]
 	\centering
-		\includegraphics[scale=0.8]{plot10.eps}
-	\caption{plot with $n=10$}
+\includegraphics[scale=0.5,angle=-90]{plot10.eps}
+\caption{plot with $n=10$}
 	\label{fig:plot10}
 \end{figure}
-\begin{figure}[tp]
+\begin{figure}[]
 	\centering
-		\includegraphics[scale=0.8]{plot100.eps}
+		\includegraphics[scale=0.5,angle=-90]{plot100.eps}
 	\caption{plot with $n=100$}
 	\label{fig:plot100}
 \end{figure}
-\begin{figure}[tp]
+\begin{figure}[]
 	\centering
-		\includegraphics[scale=0.8]{plot1000.eps}
+		\includegraphics[scale=0.5, angle=-90]{plot1000.eps}
 	\caption{plot with $n=1000$}
 	\label{fig:plot1000}
 \end{figure}
-\section{Relative errors}
+\section{The relative error}
+The relative error $\epsilon_{i}$ for the data set $ i= 1,...,n$ is given by:
+\begin{equation}
+\epsilon_{i} = \log_{10}\left(\left|\dfrac{v_{i}-u_{i}}{u_{i}}\right|\right)
+\end{equation}
+We started with $n=10$ steps and then increased the number of steps by factor $10$ until $n=10^6$. The maximum values of the relative error for the different step lengths $h$ are shown in table \ref{tab: rel. error} and plotted in grafic \ref{graf: rel. error}.
+\begin{table}[b]
+\centering
+\caption{max value of the relative error for different step lengths}
+\label{tab: rel. error}
+\begin{tabular}{lcr}\hline
+	$\log10(h)$ & $\epsilon_i$ & $n$ \\
+	\hline
+	-1.041392685 & -1.179697782 & 10 \\
+  -2.004321374 & -3.088036832 & 100 \\
+  -3.000434077 & -5.080051538 & 1000 \\
+  -4.000043427 & -7.079270511 & 10000 \\
+  -5.000004343 & -8.847801518 & 100000 \\
+  -6.000000434 & -8.05486036  & 1000000 \\	
+\end{tabular}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\label{graf: rel. error}
+\includegraphics [scale=1] {relerr.eps}
+\caption{max value of the relative error for different step lengths}
+\end{figure}
+
+When we increase the number of steps what means to reduce the step length the relative error decreases linearly (with the $\log_{10}$ scale) until $10^5$ steps. When we increase the number of steps further to $n=10^6$ the relative error becomes larger again. That shows that there is a limit to how small we can make the step length, before we run into problems with loss of precision. This also means that we can only reduce the relative error of our computed results to a certain limit.        
 \section{Comparation of execution time with the LU-decomposition}
+Using the LU-decomposition functions \textbf{ludcmp} and \textbf{lubskb}  given in lib.cpp to solve the Poisson equation we obtain results that are nearly identical to the results from our own algorithm. Table \ref{LUvsown} shows the relative errors between our solutions and the results from the LU decomposition. Compared to the relative error we obtain from the comparison to the reference solution one can see that the quality of both results is approximately the same since the relative error between our solution and the LU-solution is at least smaller by $3$ magnitudes than the relative error we obtain between our solution and the reference. \vspace{0.2cm}
+\\ 
+The comparison of execution time between the two algorithms vividly shows the importance of tuning algorithms to specific needs in order to get rid of unnecessary execution time. Table \ref{LUvsowncomp} illustrates the growth of the execution time with increasing $n$. The resolution of the timer used is about $1\milli\second$. From this we can conclude that the execution time for our linear algorithm is below $1\milli\second$ for step numbers up to $n=10^4$. For $n=10^5$ we obtain an execution time of a few milliseconds and for $n=10^6$ the time to perform the algorithm was approximately ten times longer which is exactly what we discussion in the previous paragraphs.
+ \vspace{0.2cm}
+\\
+The LU-decomposition algorithm also behaves as expected.  For $n=10$ the execution time is smaller than the precision of the clock. But for $n=10^2$ we already get an execution time of $2\milliseconds$ and for $n=10^3$ the time rises by the factor $10^3$. This verifies the previously discussed number of flops needed for the performance of this algorithm which is $O(n^3)$. According to this the execution times for the LU-decomposition for $n=10^4$ and $n=10^5$ should rise to about $40\minute$ and $11$ days respectively. This is far beyond acceptable.
+ \begin{table}%
+\centering
+\caption{maximum relative errors between our solution and the LU-decomposition} 
+\begin{tabular}{cc}\hline
+$n$ & $\epsilon_{max,n}$\\\hline
+$10^1$ & -15.27 \\ 
+$10^2$ & -13.91\\ 
+$10^3$ & -12.41 \\ \hline
+ \end{tabular}
+ \label{LUvsown}
+ \end{table}
+ \begin{table}%
+\centering
+\caption{comparison of execution times between our solution and the LU-decomposition}
+  \begin{tabular}{ccr}\hline
+$n$ & $t$ in $\second$ for tridiagonaldiff & $t$ in $\second$ for ludcmp + lubskb \\\hline
+$10^1$ & 0 & 0 \\ 
+$10^2$ & 0 & 0.002 \\
+$10^3$ & 0 & 2.393 \\
+$10^4$ & 0 & estimated $40\minute$, too long to perform\\
+$10^5$ & 0.003 & estimated $11$ days\\
+$10^6$ & 0.033 & - \\
+$10^7$ & 0.359 & -  \\ \hline
+\end{tabular}
+ \label{LUvsowncomp}
+ \end{table}
 \end{document}
 

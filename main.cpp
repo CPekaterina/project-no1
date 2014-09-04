@@ -1,8 +1,9 @@
 #include <iostream>
 #include <iomanip>
 #include <cmath>
-#include <lib.h>
+#include "lib.h"
 #include <fstream>
+
 
 
 using namespace std;
@@ -11,8 +12,13 @@ double* tridiagonal (double*a,double*b,double*c,double*w, int n);   //general tr
 double* tridiagonaldiff (double *ah,double* w, int n);              //specific tridiagonal matrix solver for Poisson equation
 double* f(double x);                                                //source function
 double* diffreference(double x);                                    //reference solution for source function
+<<<<<<< HEAD
+void write(double *z, double *y, int n, char *file);                //writes a (z,y) double vector of size n into a file
+void printmatrix(double ** A, int n, int m);                        //prints a n x m matrix A
+=======
 double findmax(double* ei, int n);                                  //finds the max value in an array
 void write(double *z, double *y, int n, char *file);
+>>>>>>> a5a7adab3f7c2058fc1f19bd4a6c9b58d65c17aa
 
 
 int main()
@@ -112,6 +118,32 @@ int main()
     write(steparray,ref,n,reffile);
     write(steparray,results,n,filename);
 
+<<<<<<< HEAD
+    //part D: LU-decomposition
+
+    //write the set of equations as a matrix
+
+    double **A;
+    A = new double * [n];
+    for (int i = 0; i < n; i++)
+    A[i] = new double[n];
+
+    for(int i=0; i<n;i++)
+    {
+        for(int j=0; j<n;j++)
+        {
+            A[i][j]=0;
+            A[i][i]=double(2);
+            A[i][i+1]=double(-1);
+            A[i][i-1]=double(-1);
+        }
+    }
+    printmatrix(A, n, n);
+    int *indx;
+    indx = new int[n];
+    double *d;
+    ludcmp(A,n,indx,d);
+=======
     //calculate the max value of the relative error
 
     double* ei;
@@ -128,6 +160,7 @@ int main()
 
     cout.precision(10);
     cout << logh << " " << maxvalue << " " << n << endl;
+>>>>>>> a5a7adab3f7c2058fc1f19bd4a6c9b58d65c17aa
 
     return 0;
 }
@@ -213,4 +246,18 @@ void write(double *z, double *y, int n, char *file)
         resout << setprecision(15) << setw(19) << z[i] << " " << setprecision(15) << setw(19) << y[i] << endl;
     }
     resout.close();
+}
+
+void printmatrix(double ** A, int n, int m)
+{
+
+    for(int i=0;i<n;i++)
+    {
+        cout << "| ";
+        for(int j=0; j<m; j++)
+        {
+            cout << setw(6) << A[i][j] << " ";
+        }
+        cout << "|" << endl;
+    }
 }
