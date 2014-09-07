@@ -8,7 +8,8 @@ SOURCES += main.cpp \
 
 HEADERS += \
     lib.h \
-    lib.hpp
+    lib.hpp \
+    main.h
 
 OTHER_FILES +=
 
