@@ -30,6 +30,9 @@
 \lstset{breaklines}
 
 \begin{document}
+\title{Report to project $1$}
+\author{Ekaterina Ilin and Isabelle Gauger}
+\maketitle
 \tableofcontents
 \newpage
 \section{The algorithm}
@@ -88,7 +91,7 @@ A more general form of the above is:
                            & c_2 & a_2 & b_2 & \dots & \dots \\
                            & \dots   & \dots &\dots   &\dots & \dots \\
                            &   &  &c_{n-2}  &a_{n-2}& b_{n-2} \\
-                           &    &  &   &c_{n-1} & b_ {n-1}\\
+                           &    &  &   &c_{n-1} & a_ {n-1}\\
                       \end{array} \right)\left(\begin{array}{c}
                            v_0\\
                            v_1\\
@@ -115,10 +118,10 @@ Since the Gaussian elimination would of course lead to the correct results here,
 	\tilde{a}[0]=a[0],\quad \tilde{a}[i]=a[i]-b[i-1]\dfrac{c[i]}{\tilde{a}[i-1]}
 	\label{eq:3}
 	\end{equation}
-	This requires $3\cdot (n-1)$ floating point operations for we obtain a division, a substraction and a multiplication for each substitution.
+	This requires $3\cdot (n-1)$ floating point operations for we obtain a division, a subtraction and a multiplication for each substitution.
 	\item Accordingly $w[\;]$ is substituted by
 		\begin{equation}
-	\tilde{w}[0]=w[0],\quad \tilde{w}[i]=w[i]-\tilde{w}[i-1]\dfrac{c[i]}{\tilde{a}[i]}
+	\tilde{w}[0]=w[0],\quad \tilde{w}[i]=w[i]-\tilde{w}[i-1]\dfrac{c[i]}{\tilde{a}[i-1]}
 	\label{eq:4}
 	\end{equation}
 	This only requires $2\cdot (n-1)$ flops for we already did the division $\frac{c[i]}{\tilde{a}[i-1]}$ during the substitution above.
@@ -127,7 +130,7 @@ Since the Gaussian elimination would of course lead to the correct results here,
 	v[n-1]=\dfrac{\tilde{w}[n-1]}{\tilde{a}[n-1]},\quad v[i]=\dfrac{\tilde{w}[i]-b[i]\cdot v[i+1]}{\tilde{a}[i-1]}
 	\label{eq:5}
 	\end{equation}
-	This operation results in another $3\cdot(n-1)+1$ flops for we have again a substraction, a multiplication and a division for each resubstitution plus a division for the first element.
+	This operation results in another $3\cdot(n-1)+1$ flops for we have again a subtraction, a multiplication and a division for each resubstitution plus a division for the first element.
 \end{enumerate}
 In sum the algorithm needs $8\cdot(n-1)+1$ floating point operations to solve the general matrix equation \ref{M}. 
 If we now go back to the specific marix \ref{N} we can simplify the algorithm once more by tuning the above one to our needs.  For this we go through the previous algorithm and insert the given values for the entries of the vectors $a[\;],\;b[\;]$ and $c[\;]$:
@@ -253,7 +256,7 @@ When we increase the number of steps what means to reduce the step length the re
 \section{Comparison of execution time with the LU-decomposition}
 Using the LU-decomposition functions \textbf{ludcmp} and \textbf{lubskb}  given in lib.cpp to solve the Poisson equation we obtain results that are nearly identical to the results from our own algorithm. Table \ref{LUvsown} shows the relative errors between our solutions and the results from the LU decomposition. Compared to the relative error we obtain from the comparison to the reference solution one can see that the quality of both results is approximately the same since the relative error between our solution and the LU-solution is at least smaller by $3$ magnitudes than the relative error we obtain between our solution and the reference. \vspace{0.2cm}
 \\ 
-The comparison of execution time between the two algorithms vividly shows the importance of tuning algorithms to specific needs in order to get rid of unnecessary execution time. Table \ref{LUvsowncomp} illustrates the growth of the execution time with increasing $n$. The resolution of the timer used is about $1\milli\second$. From this we can conclude that the execution time for our linear algorithm is below $1\milli\second$ for step numbers up to $n=10^4$. For $n=10^5$ we obtain an execution time of a few milliseconds and for $n=10^6$ the time to perform the algorithm was approximately ten times longer which is exactly what we discussion in the previous paragraphs.
+The comparison of execution time between the two algorithms vividly shows the importance of tuning algorithms to specific needs in order to get rid of unnecessary execution time. Table \ref{LUvsowncomp} illustrates the growth of the execution time with increasing $n$. The resolution of the timer used is about $1\milli\second$. From this we can conclude that the execution time for our linear algorithm is below $1\milli\second$ for step numbers up to $n=10^4$. For $n=10^5$ we obtain an execution time of a few milliseconds and for $n=10^6$ the time to perform the algorithm was approximately ten times longer which is exactly what we discussed in the previous paragraphs.
  \vspace{0.2cm}
 \\
 The LU-decomposition algorithm also behaves as expected.  For $n=10$ the execution time is smaller than the precision of the clock. But for $n=10^2$ we already get an execution time of $2\milli\second$ and for $n=10^3$ the time rises by the factor $10^3$. This verifies the previously discussed number of flops needed for the performance of this algorithm which is $O(n^3)$. According to this the execution times for the LU-decomposition for $n=10^4$ and $n=10^5$ should rise to about $40\minute$ and $11$ days respectively. This is far beyond acceptable.
