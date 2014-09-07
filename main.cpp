@@ -1,35 +1,32 @@
 #include <iostream>
 #include <iomanip>
 #include <cmath>
+#include "windows.h"
 #include "lib.h"
 #include <fstream>
-
+#include "time.h"
+#include "main.h"
 
 
 using namespace std;
 
-double* tridiagonal (double*a,double*b,double*c,double*w, int n);   //general tridiagonal matrix solver
-double* tridiagonaldiff (double *ah,double* w, int n);              //specific tridiagonal matrix solver for Poisson equation
-double* f(double x);                                                //source function
-double* diffreference(double x);                                    //reference solution for source function
-<<<<<<< HEAD
-void write(double *z, double *y, int n, char *file);                //writes a (z,y) double vector of size n into a file
-void printmatrix(double ** A, int n, int m);                        //prints a n x m matrix A
-=======
-double findmax(double* ei, int n);                                  //finds the max value in an array
-void write(double *z, double *y, int n, char *file);
->>>>>>> a5a7adab3f7c2058fc1f19bd4a6c9b58d65c17aa
+
 
 
 int main()
 {
-    //get the number of gridpoints
+
+    cout << "Solvers for the Poisson differential equation" << endl;
+    cout << "---------------------------------------------" << endl;
+
+ //get the number of gridpoints
 
     int n;
     cout << "What is the number of grid points? n= ";
     cin >> n;
+    cout << endl;
 
-    //step length and steparray
+ //step length and steparray
 
     double h =double(1)/double(n+1);
     double* steparray;
@@ -39,7 +36,7 @@ int main()
         steparray[i]=(i+1)*h;
     }
 
-    //create the right side of the equation
+ //create the right side of the equation
 
     double*w;
     w = new double[n];
@@ -51,7 +48,9 @@ int main()
 
 
 
-    //solution with tridiagonal
+ //solution with tridiagonal
+
+ //set up the diagonals
 
     double* a,*b,*c;
     a = new double[n];
@@ -72,17 +71,12 @@ int main()
     double* results2 = tridiagonal(a,b,c,w,n);
 
 
-    //solution with tridiagonaldiff
-
-    //w has to be reset because of call by reference if w in tridiagonal
-    w = new double[n];
-    for (int i=1;i<=n;i++)
-    {
-        w[i-1]=*f(double(i)*h)*h*h; // b[i]=f[i]*h*h, see project description
-    }
 
 
-    //shortcut to save 2*(n-1) flops
+
+ //solution with tridiagonaldiff
+
+ //shortcut to save 2*(n-1) flops
 
     double* ah;
     ah = new double[n];
@@ -93,11 +87,29 @@ int main()
     }
 
 
-    //compute the results
+
+
+    cout << endl << "THE TRIDIAGONAL SOLVER (tailored to the Poisson equation)" << endl << endl;
+
+
+
+ //compute the results and measure the computation time
+
+
+    clock_t start, finish;// declare start and final time
+    start = clock();
 
     double *results=tridiagonaldiff(ah,w,n);
+    finish = clock();
+    clock_t t=finish-start;
 
-    //compute the reference solution
+    cout << "Execution time for results with tridiagonaldiff: " <<setprecision(10) << ((double)t)/CLOCKS_PER_SEC << " sec." << endl;
+
+
+
+
+
+ //compute the reference solution
 
     double *ref;
     ref = new double[n];
@@ -106,7 +118,9 @@ int main()
         ref[i]=*diffreference(double(1+i)*h);
     }
 
-    //write reference solution in a .dat file and also the results
+
+
+ //write reference solution in a .dat file and also the results
 
     char filename[30]={0};
     char reffile[30]={0};
@@ -114,14 +128,16 @@ int main()
     cin >> filename;
     cout << "Name the reference file: ";
     cin >> reffile;
+    cout << endl;
 
     write(steparray,ref,n,reffile);
     write(steparray,results,n,filename);
 
-<<<<<<< HEAD
-    //part D: LU-decomposition
 
-    //write the set of equations as a matrix
+
+ //part D: LU-decomposition
+
+ //write the set of equations as a matrix
 
     double **A;
     A = new double * [n];
@@ -138,13 +154,43 @@ int main()
             A[i][i-1]=double(-1);
         }
     }
-    printmatrix(A, n, n);
+
+
+
+ //use ludcmp and lubksb to solve the matrix equation with the right side w[]
+
+
+    cout << endl << "THE LUDCMP AND LUBKSB SOLVERS (lib.cpp)" << endl << endl;
+
+    start = clock();
+
     int *indx;
     indx = new int[n];
     double *d;
     ludcmp(A,n,indx,d);
-=======
-    //calculate the max value of the relative error
+    lubksb(A,n,indx,w);
+
+    finish= clock();
+    t=finish-start;
+    cout << "Execution time for results with ludcmp and lubksb: "<< setprecision(10) << ((double)t)/CLOCKS_PER_SEC << " sec." << endl;
+
+
+
+ //write reference solution in a .dat file and also the results
+
+    char LUname[30]={0};
+    cout << "Name the results file for LU: ";
+    cin >> LUname;
+
+    write(steparray,results,n,LUname);
+
+
+
+ //part C
+
+ //calculate the max value of the relative error
+
+    cout << endl << endl << "CALCULATION OF THE MAXIMUM RELATIVE ERROR" << endl << endl;
 
     double* ei;
     ei = new double[n];
@@ -159,8 +205,7 @@ int main()
     double logh = log10(h);
 
     cout.precision(10);
-    cout << logh << " " << maxvalue << " " << n << endl;
->>>>>>> a5a7adab3f7c2058fc1f19bd4a6c9b58d65c17aa
+    cout << "The max relative error is to find at log(h)=" << logh << " and its value is " << maxvalue << " for n=" << n << "." << endl << endl;
 
     return 0;
 }
@@ -171,19 +216,22 @@ double* tridiagonal (double*a,double*b,double*c,double*w, int n)
 {
     double* x;
     x = new double[n];
+    double* tw;
+    tw = new double[n];
+    tw[0]=w[0];
 
     for (int i=1;i<n;i++)
     {
         double temp = c[i]/a[i-1];
         a[i] -= b[i-1]*temp;
-        w[i] -= w[i-1]*temp;
+        tw[i] = w[i]-tw[i-1]*temp;
     }
 
-    x[n-1] = w[n-1]/a[n-1];
+    x[n-1] = tw[n-1]/a[n-1];
 
     for (int i=n-2;i>=0;i--)
     {
-        x[i] = (w[i]-b[i]*x[i+1])/a[i];
+        x[i] = (tw[i]-b[i]*x[i+1])/a[i];
     }
     return x;
 }
@@ -192,21 +240,22 @@ double* tridiagonaldiff (double* a, double* w, int n)
 {
     double* x;
     x = new double[n];
+    double* tw;
+    tw = new double[n];
+    tw[0]=w[0];
 
     for (int i=1;i<n;i++)
     {
-        w[i] += w[i-1]/a[i-1];
+        tw[i] =w[i]+tw[i-1]/a[i-1];
     }
 
-    x[n-1] = w[n-1]/a[n-1];
+    x[n-1] = tw[n-1]/a[n-1];
 
     for (int i=n-2;i>=0;i--)
     {
-        x[i] = (w[i]+x[i+1])/a[i];
+        x[i] = (tw[i]+x[i+1])/a[i];
     }
     return x;
-
-
 }
 
 
@@ -215,11 +264,15 @@ double* f(double x)
     double res = double(100)*exp(double(-10)*x);
     return &res;
 }
+
+
 double* diffreference(double x)
 {
     double res = double(1)-(double(1)-exp(-double(10)))*x-exp(double(-10)*x);
     return &res;
 }
+
+//function to find the maximum of an array ei of size n
 
 double findmax(double* ei, int n)
 {
@@ -247,6 +300,8 @@ void write(double *z, double *y, int n, char *file)
     }
     resout.close();
 }
+
+//function to print a matrix as a check for LU
 
 void printmatrix(double ** A, int n, int m)
 {
