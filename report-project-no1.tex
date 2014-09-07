@@ -30,7 +30,7 @@
 \lstset{breaklines}
 
 \begin{document}
-\title{Report to project $1$}
+\title{Report on project $1$}
 \author{Ekaterina Ilin and Isabelle Gauger}
 \maketitle
 \tableofcontents
@@ -133,7 +133,7 @@ Since the Gaussian elimination would of course lead to the correct results here,
 	This operation results in another $3\cdot(n-1)+1$ flops for we have again a subtraction, a multiplication and a division for each resubstitution plus a division for the first element.
 \end{enumerate}
 In sum the algorithm needs $8\cdot(n-1)+1$ floating point operations to solve the general matrix equation \ref{M}. 
-If we now go back to the specific marix \ref{N} we can simplify the algorithm once more by tuning the above one to our needs.  For this we go through the previous algorithm and insert the given values for the entries of the vectors $a[\;],\;b[\;]$ and $c[\;]$:
+If we now go back to the specific matrix \ref{N} we can simplify the algorithm once more by tuning the above one to our needs.  For this we go through the previous algorithm and insert the given values for the entries of the vectors $a[\;],\;b[\;]$ and $c[\;]$:
 \begin{enumerate}
 	\item The entries in the diagonals now are:
 	\begin{equation}
@@ -145,7 +145,7 @@ If we now go back to the specific marix \ref{N} we can simplify the algorithm on
 	\tilde{a}[0]=a[0],\quad \tilde{a}[i]=a[i]-b[i-1]\dfrac{c[i]}{\tilde{a}[i-1]}=a[i]-\dfrac{1}{a[i-1]}
 	\label{eq:7}
 	\end{equation}
-	Therefore this does require $2\cdot (n-1)$ flops -  but only once, so we can compute $\tilde{a}[\;]$ once for a very large $n$ and then make use of it for any given $w[\;]$ 
+	Therefore this does require $2\cdot (n-1)$ flops -  but only once, so we can compute $\tilde{a}[\;]$ once for a very large $n$ and then make use of it for any given $w[\;]$.
 	\item Latter then is to be substituted as follows
 	\begin{equation}
 	\tilde{w}[0]=w[0],\quad \tilde{w}[i]=w[i]-\tilde{w}[i-1]\dfrac{c[i]}{\tilde{a}[i]}=	w[i]+\dfrac{\tilde{w}[i-1]}{\tilde{a}[i]}
@@ -159,7 +159,7 @@ If we now go back to the specific marix \ref{N} we can simplify the algorithm on
 	\end{equation}
 	This operation leads to another $2\cdot(n-1)+1$ flops.
 \end{enumerate}
-In sum we obtain $4\cdot(n-1)+1$ floating point operations which is more than twice as fast as the general algorithm for tridiagonal matrices. If we used standard Gaussian elemination here we would have ended up with an execution time $O(\frac{2}{3}n^3)$. An application of the LU-decomposition could have been applied but would not have been worth the effort, since - in this case - there is only one vector $w$ to be solved for. The standard LU-decomposition itself requires $O(\frac{2}{3}n^3)$ floating point operations. For solving the set of equations then we would have needed another $O(n^2)$ operations which in sum is even worse than the standard Gaussian elimination.
+In sum we obtain $4\cdot(n-1)+1$ floating point operations which is about twice as fast as the general algorithm for tridiagonal matrices. If we used standard Gaussian elimination here we would have ended up with an execution time $O(\frac{2}{3}n^3)$. An application of the LU-decomposition could have been applied but would not have been worth the effort since - in this case - there is only one vector $w$ to be solved for. The standard LU-decomposition itself requires $O(\frac{2}{3}n^3)$ floating point operations. For solving the set of equations then we would have needed another $O(n^2)$ operations which in sum is even worse than the standard Gaussian elimination.
 \section{Implementation and results}
 Possible implementations of both algorithms for tridiagonal matrices are shown below, as well as the plotted results of the computations with $n=10,\;100$ and $1000$ (see figures \ref{fig:plot10}, \ref{fig:plot100} and \ref{fig:plot1000}) respectively.
 \begin{lstlisting}[title={solvers for tridiagonal matrices}]
@@ -205,30 +205,38 @@ double* tridiagonaldiff (double* a, double* w, int n)
 
 }
 \end{lstlisting}
-\begin{figure}[b]
+\begin{figure}[H]
 	\centering
 \includegraphics[scale=0.5,angle=-90]{plot10.eps}
 \caption{plot with $n=10$}
 	\label{fig:plot10}
 \end{figure}
-\begin{figure}[]
+\begin{figure}[H]
 	\centering
 		\includegraphics[scale=0.5,angle=-90]{plot100.eps}
 	\caption{plot with $n=100$}
 	\label{fig:plot100}
 \end{figure}
-\begin{figure}[]
+\begin{figure}[H]
 	\centering
 		\includegraphics[scale=0.5, angle=-90]{plot1000.eps}
 	\caption{plot with $n=1000$}
 	\label{fig:plot1000}
 \end{figure}
 \section{The relative error}
+
+\begin{figure}[b]
+\centering
+\includegraphics [scale=1] {relerr.eps}
+\caption{max value of the relative error for different step lengths}
+\label{A}
+\end{figure}
+
 The relative error $\epsilon_{i}$ for the data set $ i= 1,...,n$ is given by:
 \begin{equation}
 \epsilon_{i} = \log_{10}\left(\left|\dfrac{v_{i}-u_{i}}{u_{i}}\right|\right)
 \end{equation}
-We started with $n=10$ steps and then increased the number of steps by factor $10$ until $n=10^6$. The maximum values of the relative error for the different step lengths $h$ are shown in table \ref{tab: rel. error} and plotted in figure \ref{graf:relerror}.
+We started with $n=10$ steps and then increased the number of steps by factor $10$ until $n=10^6$. The maximum values of the relative error for the different step lengths $h$ are shown in table \ref{tab: rel. error} and plotted in figure \ref{A}.
 \begin{table}[b]
 \centering
 \caption{max value of the relative error for different step lengths}
@@ -245,13 +253,6 @@ We started with $n=10$ steps and then increased the number of steps by factor $1
 \end{tabular}
 \end{table}
 
-\begin{figure}
-\centering
-\label{graf:relerror}
-\includegraphics [scale=1] {relerr.eps}
-\caption{max value of the relative error for different step lengths}
-\end{figure}
-
 When we increase the number of steps what means to reduce the step length the relative error decreases linearly (with the $\log_{10}$ scale) until $10^5$ steps. When we increase the number of steps further to $n=10^6$ the relative error becomes larger again. That shows that there is a limit to how small we can make the step length, before we run into problems with loss of precision. This also means that we can only reduce the relative error of our computed results to a certain limit.        
 \section{Comparison of execution time with the LU-decomposition}
 Using the LU-decomposition functions \textbf{ludcmp} and \textbf{lubskb}  given in lib.cpp to solve the Poisson equation we obtain results that are nearly identical to the results from our own algorithm. Table \ref{LUvsown} shows the relative errors between our solutions and the results from the LU decomposition. Compared to the relative error we obtain from the comparison to the reference solution one can see that the quality of both results is approximately the same since the relative error between our solution and the LU-solution is at least smaller by $3$ magnitudes than the relative error we obtain between our solution and the reference. \vspace{0.2cm}
@@ -259,7 +260,7 @@ Using the LU-decomposition functions \textbf{ludcmp} and \textbf{lubskb}  given 
 The comparison of execution time between the two algorithms vividly shows the importance of tuning algorithms to specific needs in order to get rid of unnecessary execution time. Table \ref{LUvsowncomp} illustrates the growth of the execution time with increasing $n$. The resolution of the timer used is about $1\milli\second$. From this we can conclude that the execution time for our linear algorithm is below $1\milli\second$ for step numbers up to $n=10^4$. For $n=10^5$ we obtain an execution time of a few milliseconds and for $n=10^6$ the time to perform the algorithm was approximately ten times longer which is exactly what we discussed in the previous paragraphs.
  \vspace{0.2cm}
 \\
-The LU-decomposition algorithm also behaves as expected.  For $n=10$ the execution time is smaller than the precision of the clock. But for $n=10^2$ we already get an execution time of $2\milli\second$ and for $n=10^3$ the time rises by the factor $10^3$. This verifies the previously discussed number of flops needed for the performance of this algorithm which is $O(n^3)$. According to this the execution times for the LU-decomposition for $n=10^4$ and $n=10^5$ should rise to about $40\minute$ and $11$ days respectively. This is far beyond acceptable.
+The LU-decomposition algorithm also behaves as expected.  For $n=10$ the execution time is shorter than the precision of the clock. But for $n=10^2$ we already get an execution time of $2\milli\second$ and for $n=10^3$ the time rises by the factor $10^3$. This verifies the previously discussed number of flops needed for the performance of this algorithm which is $O(n^3)$. According to this the execution times for the LU-decomposition for $n=10^4$ and $n=10^5$ should rise to about $40\minute$ and $11$ days respectively. This is far beyond acceptable.
  \begin{table}%
 \centering
 \caption{maximum relative errors between our solution and the LU-decomposition} 
